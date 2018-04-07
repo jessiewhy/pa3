@@ -1,5 +1,3 @@
-// C++ implementation to read
-// file word by word
 #include "pa3.h"
 #include <stdio.h>
 #include <iostream>
@@ -80,10 +78,13 @@ int main()
 	// filename of the file
 	cin >> filename;
 	//temp stacks, have to analyze later 
-	stack keywords, identifiers, constants, operators, delimiters, syntax, allWords, tokenError;
+	stack keywords, identifiers, constants, operators, delimiters, syntax, loopAnalysis, allWords;
+	//loop data
+	int possibleLoopDepth = 0;
+	int validLoopDepth = 0;
 	// opening file
 	file.open(filename.c_str());
-	//if file cannot open
+	//if file cannot 
 	if (!file) {
 		cout << "Could not open file " << filename << endl;
 		exit(1);
@@ -95,6 +96,7 @@ int main()
 		allWords.push(word);
 		int startIndex = 0;
 		int endIndex = 0;
+		
 		// displaying content
 		//cout << word << endl;
 		for (int i = 0; i < word.length(); i++)
@@ -169,14 +171,7 @@ int main()
 			//find parenthesis
 			if (word[i] == '(' || word[i] == ')')
 			{
-				startIndex = i++;
-				while (word[i] == '(')
-				{
-					++i;
-				}
-				endIndex = i - startIndex;
-				string parenthesisPush = word.substr(startIndex, i - startIndex);
-				syntax.push(parenthesisPush);
+				syntax.push(word.substr(i,1));
 			}
 		}
 	}
@@ -258,20 +253,14 @@ int main()
 			++leftParenthesis;
 		}
 	}
-	//if more right > left, then missing left (, so then push "(" to syntax error
+	//if more right > left, then too many ")", so then push ")" to syntax error
 	if (rightParenthesis > leftParenthesis)
 	{
-		if (!syntaxError.checkStack("("))
-		{
-			syntaxError.push("(");
-		}
+		syntaxError.push(")");
 	}
-	//if more left > right, then missing right ), so then push ")" to syntax error
+	//if more left > right, then too many "(", so then push "(" to syntax error
 	else if (leftParenthesis > rightParenthesis) {
-		if (!syntaxError.checkStack(")"))
-		{
-			syntaxError.push(")");
-		}
+		syntaxError.push("(");
 	}
 	//print nested loop count:
 
@@ -299,7 +288,8 @@ int main()
 		syntaxError.display();
 		cout << endl;
 	}
-	else {
+	else if (syntaxError.empty())
+	{
 		cout << "N/A" << endl<<endl;
 	}
 	system("pause");
