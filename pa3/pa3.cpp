@@ -300,7 +300,7 @@ int main()
 		cout << endl;
 	}
 	else {
-		cout << "N/A" << endl;
+		cout << "N/A" << endl<<endl;
 	}
 	system("pause");
 	return 0;
