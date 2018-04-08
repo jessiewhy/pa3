@@ -105,12 +105,10 @@ int main()
 	{
 		int startIndex = 0;
 		int endIndex = 0;
-		
-		// displaying content
-		//cout << word << endl;
+
 		for (int i = 0; i < word.length(); i++)
 		{
-			//looking for nested loops:
+			//find keywords or identifiers...also looking for complete loops:
 			if (isalpha(word[i]) || word[i] == '(' || word[i] == ')')
 			{
 				startIndex = i++;
@@ -124,6 +122,13 @@ int main()
 
 				//get word
 				string wordToPush = word.substr(startIndex, endIndex);
+				if (isupper(wordToPush[0])) {
+					keywords.push(wordToPush);
+
+				}
+				else {
+					identifiers.push(wordToPush);
+				}
 				if (wordToPush == "FOR")
 				{
 					loopAnalysis.push(wordToPush);
@@ -166,51 +171,6 @@ int main()
 					}
 				}
 
-			}
-			//find keywords or identifiers
-			if (isalpha(word[i]))
-			{
-				startIndex = i++;
-				//while it's a lower case letter of alphabet
-				while (isalpha(word[i]))
-				{
-					//get length of identifier
-					++i;
-				}
-				endIndex = i - startIndex;
-
-				//get word
-				string wordToPush = word.substr(startIndex, endIndex);
-				if (wordToPush == "FOR")
-				{
-					loopAnalysis.push(wordToPush);
-				}
-				if (wordToPush == "BEGIN")
-				{
-					if (loopAnalysis.checkTop() == "FOR")
-					{
-						loopAnalysis.push(wordToPush);
-					}
-				}
-				if (wordToPush == "END")
-				{
-					if (loopAnalysis.checkTop() == "BEGIN")
-					{
-						loopAnalysis.pop();  //pop BEGIN
-						if (loopAnalysis.checkTop() == "FOR")
-						{
-							loopAnalysis.pop();   //pop FOR
-							++completeLoop;
-						}
-					}
-				}
-				if (isupper(wordToPush[0])) {
-					keywords.push(wordToPush);
-
-				}
-				else {
-					identifiers.push(wordToPush);
-				}
 			}
 			//find constants
 			if (isdigit(word[i]))
