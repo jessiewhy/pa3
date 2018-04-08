@@ -78,23 +78,25 @@ bool stack::checkStack(string value) {
 
 }
 
-// driver code
 int main()
 {
-	// filestream variable file
 	fstream file;
 	string word, filename;
 	cout << "Please enter the name of the input file: " << endl;
 	// filename of the file
 	cin >> filename;
+
 	//temp stacks, have to analyze later 
-	stack keywords, identifiers, constants, operators, delimiters, syntax, loopAnalysis, allWords;
+	stack keywords, identifiers, constants, operators, delimiters, syntax, loopAnalysis;
+	
 	//loop data...
 	int completeLoop = 0;
 	bool checkParenthesis = true;
+	
 	// opening file
 	file.open(filename.c_str());
-	//if file cannot 
+	
+	//if file cannot open
 	if (!file) {
 		cout << "Could not open file " << filename << endl;
 		exit(1);
