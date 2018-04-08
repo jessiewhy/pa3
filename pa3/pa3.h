@@ -24,6 +24,7 @@ public:
 	void display();
 	bool empty();
 	string topOfStack();
+	string checkTop();
 	bool checkStack(string value);
 };
 

@@ -56,6 +56,16 @@ string stack::topOfStack()
 	return temp->data;
 }
 
+string stack::checkTop()
+{
+	struct node *temp;
+	if (top == NULL) {
+		cout << "Stack is empty." << endl;
+	}
+	temp = top;
+	return temp->data;
+}
+
 bool stack::checkStack(string value) {
 	struct node *ptr = new node;
 	ptr = top;
@@ -79,9 +89,9 @@ int main()
 	cin >> filename;
 	//temp stacks, have to analyze later 
 	stack keywords, identifiers, constants, operators, delimiters, syntax, loopAnalysis, allWords;
-	//loop data
-	int possibleLoopDepth = 0;
-	int validLoopDepth = 0;
+	//loop data...
+	int completeLoop = 0;
+	bool checkParenthesis = true;
 	// opening file
 	file.open(filename.c_str());
 	//if file cannot 
@@ -93,7 +103,6 @@ int main()
 	// extracting words form the file
 	while (file >> word)
 	{
-		allWords.push(word);
 		int startIndex = 0;
 		int endIndex = 0;
 		
@@ -101,6 +110,63 @@ int main()
 		//cout << word << endl;
 		for (int i = 0; i < word.length(); i++)
 		{
+			//looking for nested loops:
+			if (isalpha(word[i]) || word[i] == '(' || word[i] == ')')
+			{
+				startIndex = i++;
+				//while it's letter of alphabet
+				while (isalpha(word[i]))
+				{
+					//get length of word
+					++i;
+				}
+				endIndex = i - startIndex;
+
+				//get word
+				string wordToPush = word.substr(startIndex, endIndex);
+				if (wordToPush == "FOR")
+				{
+					loopAnalysis.push(wordToPush);
+				}
+				if (word[i] == '(')
+				{
+					loopAnalysis.push("(");
+				}
+				if (word[i] == ')')
+				{
+					if (loopAnalysis.checkTop() == "(")
+					{
+						loopAnalysis.pop();   //pop '('
+						checkParenthesis = true;
+					}
+					else {
+						checkParenthesis = false;
+					}
+				}
+				if (checkParenthesis == true)
+				{
+					if (wordToPush == "BEGIN")
+					{
+						if (loopAnalysis.checkTop() == "FOR")
+						{
+							loopAnalysis.push(wordToPush);
+						}
+					}
+					if (wordToPush == "END")
+					{
+						if (loopAnalysis.checkTop() == "BEGIN")
+						{
+							loopAnalysis.pop();   //pop BEGIN 
+							if (loopAnalysis.checkTop() == "FOR")
+							{
+								loopAnalysis.pop();   //pop FOR
+								++completeLoop;
+							}
+						}
+					}
+				}
+
+			}
 			//find keywords or identifiers
 			if (isalpha(word[i]))
 			{
@@ -115,8 +181,32 @@ int main()
 
 				//get word
 				string wordToPush = word.substr(startIndex, endIndex);
+				if (wordToPush == "FOR")
+				{
+					loopAnalysis.push(wordToPush);
+				}
+				if (wordToPush == "BEGIN")
+				{
+					if (loopAnalysis.checkTop() == "FOR")
+					{
+						loopAnalysis.push(wordToPush);
+					}
+				}
+				if (wordToPush == "END")
+				{
+					if (loopAnalysis.checkTop() == "BEGIN")
+					{
+						loopAnalysis.pop();  //pop BEGIN
+						if (loopAnalysis.checkTop() == "FOR")
+						{
+							loopAnalysis.pop();   //pop FOR
+							++completeLoop;
+						}
+					}
+				}
 				if (isupper(wordToPush[0])) {
 					keywords.push(wordToPush);
+
 				}
 				else {
 					identifiers.push(wordToPush);
@@ -155,7 +245,7 @@ int main()
 			{
 				operators.push(word);
 			}
-			else if (word.find('=') != 'j')
+			else if (word.find("=") != 'j')
 			{
 				bool hasEqual = true;
 				if (hasEqual == true)
@@ -182,6 +272,9 @@ int main()
 	string validConstant;
 	string validOperator;
 	string validDelimiter;
+	int forCounter = 0;
+	int beginCounter = 0;
+	int endCounter = 0;
 
 	while (!keywords.empty())
 	{
@@ -192,7 +285,18 @@ int main()
 			{
 				checkKeywords.push(possibleKeyword);
 			}
-
+			if (possibleKeyword == "FOR")
+			{
+				++forCounter;
+			}
+			if (possibleKeyword == "BEGIN")
+			{
+				++beginCounter;
+			}
+			if (possibleKeyword == "END")
+			{
+				++endCounter;
+			}
 		}
 		//if not "FOR", "BEGIN", OR "END", then push keyword to syntax error
 		else {
@@ -200,6 +304,32 @@ int main()
 			{
 				syntaxError.push(possibleKeyword);
 			}
+		}
+	}
+	//once you get final FOR, BEGIN, AND END COUNT, compare values to see what you're missing:
+	//correct syntax means FOR = BEGIN = END:
+	//missing a BEGIN case:
+	if (beginCounter < forCounter)
+	{
+		if (!syntaxError.checkStack("BEGIN")) {
+			syntaxError.push("BEGIN");
+		}
+	}
+	//missing an END case:
+	if (endCounter < forCounter)
+	{
+		if (!syntaxError.checkStack("END")) {
+			syntaxError.push("END");
+		}
+	}
+	//missing a BEGIN and END case:
+	if (beginCounter < forCounter && endCounter < forCounter)
+	{
+		if (!syntaxError.checkStack("BEGIN")) {
+			syntaxError.push("BEGIN");
+		}
+		if (!syntaxError.checkStack("END")) {
+			syntaxError.push("END");
 		}
 	}
 
@@ -262,7 +392,16 @@ int main()
 	else if (leftParenthesis > rightParenthesis) {
 		syntaxError.push("(");
 	}
+
 	//print nested loop count:
+	cout << "The depth of nested loop(s) is ";
+	if (completeLoop - 1 < 0) {
+		cout << completeLoop;
+	}
+	else {
+		cout << completeLoop - 1;
+	}
+	cout << endl<<endl;
 
 	//print final stacks:
 	cout << "Keywords: ";
