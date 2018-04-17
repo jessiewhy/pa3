@@ -128,7 +128,7 @@ int main()
 					keywords.push(wordToPush);
 
 				}
-				else {
+				else if (islower(wordToPush[0])) {
 					identifiers.push(wordToPush);
 				}
 				if (wordToPush == "FOR")
